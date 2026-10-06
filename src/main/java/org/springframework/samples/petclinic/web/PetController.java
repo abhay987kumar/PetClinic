@@ -15,6 +15,11 @@
  */
 package org.springframework.samples.petclinic.web;
 
+import java.util.Collection;
+import java.util.Map;
+
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.model.Pet;
@@ -26,9 +31,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.util.Collection;
 
 /**
  * @author Juergen Hoeller
@@ -53,8 +55,7 @@ public class PetController {
 
     @ModelAttribute("owner")
     public Owner findOwner(@PathVariable("ownerId") int ownerId) {
-        Owner owner = this.clinicService.findOwnerById(ownerId);
-        return owner;
+        return this.clinicService.findOwnerById(ownerId);
     }
 
     @InitBinder("owner")
@@ -77,7 +78,7 @@ public class PetController {
 
     @RequestMapping(value = "/pets/new", method = RequestMethod.POST)
     public String processCreationForm(Owner owner, @Valid Pet pet, BindingResult result, ModelMap model) {
-        if (StringUtils.hasLength(pet.getName()) && pet.isNew() && owner.getPet(pet.getName(), true) != null){
+        if (StringUtils.hasLength(pet.getName()) && pet.isNew() && owner.getPet(pet.getName(), true) != null) {
             result.rejectValue("name", "duplicate", "already exists");
         }
         if (result.hasErrors()) {

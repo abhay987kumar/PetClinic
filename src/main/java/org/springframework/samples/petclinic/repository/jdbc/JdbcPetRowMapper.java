@@ -19,8 +19,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 import org.springframework.jdbc.core.RowMapper;
 
 /**
@@ -32,10 +30,10 @@ class JdbcPetRowMapper implements RowMapper<JdbcPet> {
     @Override
     public JdbcPet mapRow(ResultSet rs, int rownum) throws SQLException {
         JdbcPet pet = new JdbcPet();
-        pet.setId(rs.getInt("pets.id"));
+        pet.setId(rs.getInt("pet_id"));
         pet.setName(rs.getString("name"));
         Date birthDate = rs.getDate("birth_date");
-        pet.setBirthDate(new LocalDate(birthDate));
+        pet.setBirthDate(birthDate != null ? birthDate.toLocalDate() : null);
         pet.setTypeId(rs.getInt("type_id"));
         pet.setOwnerId(rs.getInt("owner_id"));
         return pet;

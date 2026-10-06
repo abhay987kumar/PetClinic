@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2015 the original author or authors.
+ * Copyright 2002-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,40 +15,50 @@
  */
 package org.springframework.samples.petclinic.repository.jdbc;
 
-import org.springframework.data.jdbc.core.OneToManyResultSetExtractor;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.samples.petclinic.model.Visit;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 /**
- * {@link ResultSetExtractor} implementation by using the
- * {@link OneToManyResultSetExtractor} of Spring Data Core JDBC Extensions.
+ * Extracts owner pets and their visits from a JDBC result set.
  */
-public class JdbcPetVisitExtractor extends
-    OneToManyResultSetExtractor<JdbcPet, Visit, Integer> {
-
-    public JdbcPetVisitExtractor() {
-        super(new JdbcPetRowMapper(), new JdbcVisitRowMapper());
-    }
+public class JdbcPetVisitExtractor implements ResultSetExtractor<List<JdbcPet>> {
 
     @Override
-    protected Integer mapPrimaryKey(ResultSet rs) throws SQLException {
-        return rs.getInt("pets.id");
-    }
+    public List<JdbcPet> extractData(ResultSet rs) throws SQLException {
+        Map<Integer, JdbcPet> petsById = new HashMap<>();
 
-    @Override
-    protected Integer mapForeignKey(ResultSet rs) throws SQLException {
-        if (rs.getObject("visits.pet_id") == null) {
-            return null;
-        } else {
-            return rs.getInt("visits.pet_id");
+        while (rs.next()) {
+            int petId = rs.getInt("pet_id");
+            JdbcPet pet = petsById.get(petId);
+            if (pet == null) {
+                pet = new JdbcPet();
+                pet.setId(petId);
+                pet.setName(rs.getString("name"));
+                java.sql.Date birthDate = rs.getDate("birth_date");
+                pet.setBirthDate(birthDate != null ? birthDate.toLocalDate() : null);
+                pet.setTypeId(rs.getInt("type_id"));
+                pet.setOwnerId(rs.getInt("owner_id"));
+                petsById.put(petId, pet);
+            }
+
+            Integer visitId = rs.getObject("visit_id") == null ? null : rs.getInt("visit_id");
+            if (visitId != null) {
+                Visit visit = new Visit();
+                visit.setId(visitId);
+                java.sql.Date visitDate = rs.getDate("visit_date");
+                visit.setDate(visitDate != null ? visitDate.toLocalDate() : null);
+                visit.setDescription(rs.getString("description"));
+                pet.addVisit(visit);
+            }
         }
-    }
 
-    @Override
-    protected void addChild(JdbcPet root, Visit child) {
-        root.addVisit(child);
+        return new ArrayList<>(petsById.values());
     }
 }

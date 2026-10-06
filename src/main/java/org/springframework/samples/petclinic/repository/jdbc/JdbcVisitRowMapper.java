@@ -15,14 +15,12 @@
  */
 package org.springframework.samples.petclinic.repository.jdbc;
 
-
-import org.joda.time.LocalDate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.samples.petclinic.model.Visit;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.samples.petclinic.model.Visit;
 
 /**
  * {@link RowMapper} implementation mapping data from a {@link ResultSet} to the corresponding properties
@@ -35,7 +33,7 @@ class JdbcVisitRowMapper implements RowMapper<Visit> {
         Visit visit = new Visit();
         visit.setId(rs.getInt("visit_id"));
         Date visitDate = rs.getDate("visit_date");
-        visit.setDate(new LocalDate(visitDate));
+        visit.setDate(visitDate != null ? visitDate.toLocalDate() : null);
         visit.setDescription(rs.getString("description"));
         return visit;
     }

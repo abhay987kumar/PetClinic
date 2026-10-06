@@ -17,7 +17,7 @@ package org.springframework.samples.petclinic.web;
 
 import java.util.Map;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.samples.petclinic.model.Pet;
@@ -42,7 +42,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class VisitController {
 
     private final ClinicService clinicService;
-
 
     @Autowired
     public VisitController(ClinicService clinicService) {
@@ -72,13 +71,11 @@ public class VisitController {
         return visit;
     }
 
-    // Spring MVC calls method loadPetWithVisit(...) before initNewVisitForm is called
     @RequestMapping(value = "/owners/*/pets/{petId}/visits/new", method = RequestMethod.GET)
     public String initNewVisitForm(@PathVariable("petId") int petId, Map<String, Object> model) {
         return "pets/createOrUpdateVisitForm";
     }
 
-    // Spring MVC calls method loadPetWithVisit(...) before processNewVisitForm is called
     @RequestMapping(value = "/owners/{ownerId}/pets/{petId}/visits/new", method = RequestMethod.POST)
     public String processNewVisitForm(@Valid Visit visit, BindingResult result) {
         if (result.hasErrors()) {

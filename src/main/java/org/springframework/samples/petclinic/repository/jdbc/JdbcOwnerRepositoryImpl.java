@@ -33,7 +33,6 @@ import org.springframework.orm.ObjectRetrievalFailureException;
 import org.springframework.samples.petclinic.model.Owner;
 import org.springframework.samples.petclinic.model.Pet;
 import org.springframework.samples.petclinic.model.PetType;
-import org.springframework.samples.petclinic.model.Visit;
 import org.springframework.samples.petclinic.repository.OwnerRepository;
 import org.springframework.samples.petclinic.util.EntityUtils;
 import org.springframework.stereotype.Repository;
@@ -51,21 +50,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JdbcOwnerRepositoryImpl implements OwnerRepository {
 
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    private SimpleJdbcInsert insertOwner;
+    private final SimpleJdbcInsert insertOwner;
 
     @Autowired
     public JdbcOwnerRepositoryImpl(DataSource dataSource, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-
         this.insertOwner = new SimpleJdbcInsert(dataSource)
             .withTableName("owners")
             .usingGeneratedKeyColumns("id");
 
-        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
-
 
     /**
      * Loads {@link Owner Owners} from the data store by last name, returning all owners whose last name <i>starts</i> with
@@ -96,7 +92,7 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
             Map<String, Object> params = new HashMap<>();
             params.put("id", id);
             owner = this.namedParameterJdbcTemplate.queryForObject(
-                "SELECT id, first_name, last_name, address, city, telephone FROM owners WHERE id= :id",
+                "SELECT id, first_name, last_name, address, city, telephone FROM owners WHERE id = :id",
                 params,
                 BeanPropertyRowMapper.newInstance(Owner.class)
             );
@@ -111,7 +107,9 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("id", owner.getId());
         final List<JdbcPet> pets = this.namedParameterJdbcTemplate.query(
-            "SELECT pets.id, name, birth_date, type_id, owner_id, visits.id as visit_id, visit_date, description, pet_id FROM pets LEFT OUTER JOIN visits ON  pets.id = pet_id WHERE owner_id=:id",
+            "SELECT pets.id as pet_id, pets.name as name, pets.birth_date as birth_date, pets.type_id as type_id, " +
+                "pets.owner_id as owner_id, visits.id as visit_id, visits.visit_date as visit_date, " +
+                "visits.description as description FROM pets LEFT OUTER JOIN visits ON pets.id = visits.pet_id WHERE owner_id=:id",
             params,
             new JdbcPetVisitExtractor()
         );
@@ -138,7 +136,7 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
 
     public Collection<PetType> getPetTypes() throws DataAccessException {
         return this.namedParameterJdbcTemplate.query(
-            "SELECT id, name FROM types ORDER BY name", new HashMap<String, Object>(),
+            "SELECT id, name FROM types ORDER BY name", new HashMap<>(),
             BeanPropertyRowMapper.newInstance(PetType.class));
     }
 
@@ -153,6 +151,5 @@ public class JdbcOwnerRepositoryImpl implements OwnerRepository {
             loadPetsAndVisits(owner);
         }
     }
-
 
 }

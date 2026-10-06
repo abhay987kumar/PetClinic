@@ -15,6 +15,11 @@
  */
 package org.springframework.samples.petclinic.repository.jdbc;
 
+import java.sql.Date;
+import java.util.List;
+
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,9 +28,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.samples.petclinic.model.Visit;
 import org.springframework.samples.petclinic.repository.VisitRepository;
 import org.springframework.stereotype.Repository;
-
-import javax.sql.DataSource;
-import java.util.List;
 
 /**
  * A simple JDBC-based implementation of the {@link VisitRepository} interface.
@@ -54,7 +56,6 @@ public class JdbcVisitRepositoryImpl implements VisitRepository {
             .usingGeneratedKeyColumns("id");
     }
 
-
     @Override
     public void save(Visit visit) throws DataAccessException {
         if (visit.isNew()) {
@@ -66,14 +67,13 @@ public class JdbcVisitRepositoryImpl implements VisitRepository {
         }
     }
 
-
     /**
      * Creates a {@link MapSqlParameterSource} based on data values from the supplied {@link Visit} instance.
      */
     private MapSqlParameterSource createVisitParameterSource(Visit visit) {
         return new MapSqlParameterSource()
             .addValue("id", visit.getId())
-            .addValue("visit_date", visit.getDate().toDate())
+            .addValue("visit_date", visit.getDate() == null ? null : Date.valueOf(visit.getDate()))
             .addValue("description", visit.getDescription())
             .addValue("pet_id", visit.getPet().getId());
     }
