@@ -15,6 +15,8 @@
  */
 package org.springframework.samples.petclinic.model;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -22,8 +24,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotEmpty;
 
-import org.hibernate.annotations.Type;
-import org.joda.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -39,7 +39,6 @@ public class Visit extends BaseEntity {
      * Holds value of property date.
      */
     @Column(name = "visit_date")
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentLocalDate")
     @DateTimeFormat(pattern = "yyyy/MM/dd")
     private LocalDate date;
 
@@ -62,7 +61,7 @@ public class Visit extends BaseEntity {
      * Creates a new instance of Visit for the current date
      */
     public Visit() {
-        this.date = new LocalDate();
+        this.date = LocalDate.now();
     }
 
 
